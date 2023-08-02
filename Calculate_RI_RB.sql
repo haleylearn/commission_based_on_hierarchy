@@ -1,0 +1,52 @@
+
+WITH ParentAndChild AS (
+     -- base query
+    SELECT user_id AS parent, user_id AS child, 0 As hireachy_level FROM user_mapping  
+
+    UNION ALL
+
+    -- recursive query
+    SELECT c1.parent, c2.user_id, hireachy_level + 1
+    FROM ParentAndChild c1, user_mapping c2
+    WHERE c1.child = c2.parent_user_id
+) -- To get all child of each node
+
+, ParentAndChildFinnal AS (
+    SELECT * FROM ParentAndChild WHERE parent <> child
+) -- To get all child of each node but dont have any parent = child
+
+, CalculateRI AS (
+    SELECT parent, SUM(bonus_percent) AS RI
+    FROM 
+    (
+        SELECT parent, child, hireachy_level, CONVERT(DECIMAL(10,2),b.level_percentage) * 100 AS bonus_percent
+        FROM ParentAndChildFinnal p
+        JOIN level_bonus b ON p.hireachy_level = b.id
+    ) x
+    GROUP BY parent
+)
+, CalculateRB AS (
+    SELECT parent, SUM(CONVERT(DECIMAL(10,2),total)) AS RB
+    FROM 
+    (
+        SELECT p.parent, child
+            , parent_user_id AS leader
+            , user_level AS level_leader
+            , CONVERT(DECIMAL(10,2),b.ld_level_percentage) AS bonus_percent
+            , r.RI
+            , (r.RI * b.ld_level_percentage) AS total
+        FROM ParentAndChildFinnal p 
+        JOIN user_mapping u ON p.child = u.user_id
+        JOIN leadership_bonus b ON hireachy_level = b.id
+        JOIN CalculateRI r ON r.parent = child
+    ) x
+    GROUP BY parent
+)
+
+
+SELECT * FROM CalculateRB;
+SELECT * FROM CalculateRI;
+
+
+
+
