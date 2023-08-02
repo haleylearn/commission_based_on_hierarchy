@@ -14,6 +14,8 @@ This case study uses SQL Server. To successfully answer all the questions one sh
 ![image](https://github.com/haleylearn/commission_based_on_hierarchy/blob/main/hierarchy.jpg)
 ![image](https://github.com/haleylearn/commission_based_on_hierarchy/blob/main/explain_calculate_RI_RB.png)
 
+(Assume that each node only brings in invested_amount only 100 USD)
+
 # Calculate RI:
 Node X has :
 * Level 1 > 10 + 10 ( A + B )
